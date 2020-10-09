@@ -3,17 +3,35 @@ package tictactoe;
 import java.util.Arrays;
 import java.util.Random;
 
+import static tictactoe.Main.*;
+
 public class ComputerPlayer extends Player {
 
+    /* Difficulty of the AI.
+     * It can be:
+     * - Easy
+     * - Medium
+     * - Hard
+     * */
     String difficulty;
 
+    /**
+     * Create a computer player that knows how to play the game.
+     *
+     * @param difficulty of the AI.
+     * @param symbol     of the AI player, X or O.
+     */
     public ComputerPlayer(String difficulty, char symbol) {
         this.difficulty = difficulty;
         super.symbol = symbol;
     }
 
+    /**
+     * Make a move by filling an empty cell in the Tic-Tac-Toe table.
+     * The move depends on the AI difficulty level.
+     */
     @Override
-    void makeMove() {
+    protected void makeMove() {
         System.out.println("Making move level \"" + difficulty + "\"");
 
         try {
@@ -37,19 +55,20 @@ public class ComputerPlayer extends Player {
 
     }
 
-    /* The easy level always makes random moves regardless of the state of the game. */
-    void makeMoveEasy() {
+    /**
+     * The easy level always makes random moves regardless of the state of the game.
+     */
+    private void makeMoveEasy() {
         makeRandomMove();
     }
 
     /**
      * The "medium" level difficulty makes a move using the following process:
-     * <p>
      * - If it can win in one move (if it has two in a row), it places a third to get three in a row and win.
      * - If the opponent can win in one move, it plays the third itself to block the opponent to win.
      * - Otherwise, it makes a random move.
      */
-    void makeMoveMedium() {
+    private void makeMoveMedium() {
 
         /* Get the index of the winning move, if exists. */
         int winningMoveIndex = getCrucialMoveIndex("winning");
@@ -69,17 +88,33 @@ public class ComputerPlayer extends Player {
 
         /* If there is no winning move or a blocking move, just make a random move. */
         makeRandomMove();
-
     }
 
-    void makeMoveHard() {
+    /**
+     * Compared to the "medium" level difficulty, this level not just go one move ahead to see
+     * an immediate win or prevent an immediate loss. This level can see two moves ahead,
+     * three moves ahead and so on. Basically, it can see all possible outcomes till the end
+     * of the game and choose the best of them considering his opponent also would play perfectly.
+     * So, it doesn't rely on the blunders of the opponent, it plays perfectly regardless of the opponent's skill.
+     */
+    private void makeMoveHard() {
         int bestNextMoveIndex = minimax(Main.table, this.symbol);
         Main.table[bestNextMoveIndex] = this.symbol;
     }
 
 
-    /* The main minimax function. */
-    int minimax(int[] newTable, char player) {
+    /**
+     * The minimax algorithm. It can all the outcomes of the current state of the game and decides the best
+     * next move.
+     *
+     * @param newTable: this algorithm makes a virtual game by itself depending on the current state of the
+     *                  table and continues playing until it reaches a terminal state (i.e. a win, lose or draw).
+     *                  So, this table is where this algorithm makes its virtual game.
+     * @param player    : the player symbol (X or O). This algorithm will play its symbol at first
+     *                  then the opponent symbol and so on to reach a terminal state.
+     * @return the index with the highest score (i.e. the best possible index to play).
+     */
+    private int minimax(int[] newTable, char player) {
         int[] availSpots = emptyIndexes(newTable);
 
         char opponentSymbol = this.symbol == 'X' ? 'O' : 'X';
@@ -103,7 +138,7 @@ public class ComputerPlayer extends Player {
             // Set the empty spot to the current player (virtual move by the current player).
             newTable[availSpots[i]] = player;
 
-            /* Collect the score resulted from calling minimax on the opponent of the current player. */
+            /* Collect the score resulted from calling minimax on the opponent. */
             int result;
             if (player == this.symbol) {
                 result = minimax(newTable, opponentSymbol);
@@ -143,8 +178,13 @@ public class ComputerPlayer extends Player {
         return moves[bestMoveIndex].index;
     }
 
-    /* Returns an array of empty cells in the table. */
-    int[] emptyIndexes(int[] table) {
+    /**
+     * Return the empty cells indexes in this table.
+     *
+     * @param table to check empty cells in.
+     * @return an array of empty cells indexes.
+     */
+    private int[] emptyIndexes(int[] table) {
         int emptyCellsCount = 0;
         for (int i : table) {
             if (i != 'X' && i != 'O') {
@@ -163,30 +203,31 @@ public class ComputerPlayer extends Player {
         return result;
     }
 
-    /* Winning combinations using the passed board indexes. */
-    boolean winning(int[] board, char player) {
-        return (board[0] == player && board[1] == player && board[2] == player) ||
-                (board[3] == player && board[4] == player && board[5] == player) ||
-                (board[6] == player && board[7] == player && board[8] == player) ||
-                (board[0] == player && board[3] == player && board[6] == player) ||
-                (board[1] == player && board[4] == player && board[7] == player) ||
-                (board[2] == player && board[5] == player && board[8] == player) ||
-                (board[0] == player && board[4] == player && board[8] == player) ||
-                (board[2] == player && board[4] == player && board[6] == player);
-
+    /**
+     *
+     */
+    private boolean winning(int[] table, char symbol) {
+        return (table[0] == symbol && table[1] == symbol && table[2] == symbol) ||
+                (table[3] == symbol && table[4] == symbol && table[5] == symbol) ||
+                (table[6] == symbol && table[7] == symbol && table[8] == symbol) ||
+                (table[0] == symbol && table[3] == symbol && table[6] == symbol) ||
+                (table[1] == symbol && table[4] == symbol && table[7] == symbol) ||
+                (table[2] == symbol && table[5] == symbol && table[8] == symbol) ||
+                (table[0] == symbol && table[4] == symbol && table[8] == symbol) ||
+                (table[2] == symbol && table[4] == symbol && table[6] == symbol);
     }
 
+    /**
+     * Make a random move on the table ragardless of the state of the game.
+     */
     private void makeRandomMove() {
         Random random = new Random();
 
-        /* A random move is done when a random empty cell is found. */
+        /* Keep generating random indexes in range [0,8] until you find an empty cell.  */
         boolean correctMove = false;
         do {
-            // Generate a random index in the table to fill it.
             int index = random.nextInt(9);
-            // Check if the cell is empty.
-            if (Main.table[index] != 'X' && Main.table[index] != 'O') {
-                // Make the move.
+            if (isCellEmpty(index)) {
                 Main.table[index] = symbol;
                 correctMove = true;
             }
@@ -201,122 +242,106 @@ public class ComputerPlayer extends Player {
      * of the third cell to win the game.
      * - a blocking move: two of the opponent symbol in a row so this method returns the index
      * of the third cell to stop the win.
+     *
+     * @param moveMode: winning or blocking move.
+     * @return the index of a crucial move if exists, otherwise -1.
      */
     private int getCrucialMoveIndex(String moveMode) {
+        /* If the mode is winning, then the symbol to search for (two in a row) should be this symbol,
+         * otherwise, it's the opponent symbol. */
         char charToSearchFor;
 
         if (moveMode.equals("winning")) {
             charToSearchFor = this.symbol;
         } else if (moveMode.equals("blocking")) {
-            // Find the opponent symbol.
             charToSearchFor = this.symbol == 'X' ? 'O' : 'X';
         } else {
             System.out.println("Unknown move type!");
             return -1;
         }
 
-        /* Check every row if there is two in a row of charToSearchFor. */
-        for (int i = 1; i < Main.table.length; i++) {
-            if (Main.table[i] == charToSearchFor && Main.table[i - 1] == charToSearchFor) {
-                if (i == 2 || i == 5 || i == 8) {
-                    // Make sure the cell is empty before returning the index of it.
-                    if (Main.table[i - 2] != 'X' && Main.table[i - 2] != 'O')
-                        return i - 2;
-                } else {
-                    // Make sure the cell is empty before returning the index of it.
-                    if (Main.table[i + 1] != 'X' && Main.table[i + 1] != 'O')
-                        return i + 1;
-                }
-            }
-            // When reaching the boundaries of the table, move i to the middle of the next row.
-            if (i == 2 || i == 5) {
-                i++;
-            }
-        }
+        /* Check every empty cell and see if filling it would make the AI win or the opponent lose
+         * his chance of winning. For example, cell 0 is a crucial cell if any of the following is true:
+         * - index 1 and 2 have two of the same symbol.
+         * - index 3 and 6 have two of the same symbol.
+         * - index 4 and 8 have two of the same symbol.
+         */
 
-        /* Check every column if there is two in a row of charToSearchFor. */
-        for (int i = 3; i < Main.table.length; i += 3) {
-            if (Main.table[i] == charToSearchFor && Main.table[i - 3] == charToSearchFor) {
-                if (i == 6 || i == 7 || i == 8) {
-                    if (Main.table[i - 6] != 'X' && Main.table[i - 6] != 'O')
-                        return i - 6;
-                } else {
-                    if (Main.table[i + 3] != 'X' && Main.table[i + 3] != 'O')
-                        return i + 3;
-                }
-
-            }
-
-            // If the bottom of the column is reached, assign i to the middle of the next column by subtracting
-            // 2 from i.
-            // i -= 5 --> consider the increment of i before each iteration, i += 3.
-            if (i == 6 || i == 7) {
-                i -= 5;
-            }
-        }
-
-        /* Other cases for the winning move to occur:
-         * - Two in a row of charToSearchFor diagonally.
-         * - The winning move cell is located at the middle of row/column/diagonal.
-         * */
-
-        /*
-         * Both diagonals.
-         * */
-        if (Main.table[0] == charToSearchFor && Main.table[4] == charToSearchFor)
-            if (Main.table[8] != 'X' && Main.table[8] != 'O')
-                return 8;
-
-        if (Main.table[0] == charToSearchFor && Main.table[8] == charToSearchFor)
-            if (Main.table[4] != 'X' && Main.table[4] != 'O')
-                return 4;
-
-        if (Main.table[4] == charToSearchFor && Main.table[8] == charToSearchFor)
-            if (Main.table[0] != 'X' && Main.table[0] != 'O')
+        // Cell with index 0.
+        if (Main.table[1] == charToSearchFor && Main.table[2] == charToSearchFor ||
+                Main.table[3] == charToSearchFor && Main.table[6] == charToSearchFor ||
+                Main.table[4] == charToSearchFor && Main.table[8] == charToSearchFor) {
+            if (isCellEmpty(0)) {
                 return 0;
+            }
+        }
 
-        if (Main.table[2] == charToSearchFor && Main.table[4] == charToSearchFor)
-            if (Main.table[6] != 'X' && Main.table[6] != 'O')
-                return 6;
-
-        if (Main.table[2] == charToSearchFor && Main.table[6] == charToSearchFor)
-            if (Main.table[4] != 'X' && Main.table[4] != 'O')
-                return 4;
-
-        if (Main.table[4] == charToSearchFor && Main.table[6] == charToSearchFor)
-            if (Main.table[2] != 'X' && Main.table[2] != 'O')
-                return 2;
-
-        /*
-         * Odd cases in rows.
-         * */
-        if (Main.table[0] == charToSearchFor && Main.table[2] == charToSearchFor)
-            if (Main.table[1] != 'X' && Main.table[1] != 'O')
+        // Cell with index 1.
+        if (Main.table[0] == charToSearchFor && Main.table[2] == charToSearchFor ||
+                Main.table[4] == charToSearchFor && Main.table[7] == charToSearchFor) {
+            if (isCellEmpty(1)) {
                 return 1;
+            }
+        }
 
-        if (Main.table[3] == charToSearchFor && Main.table[5] == charToSearchFor)
-            if (Main.table[4] != 'X' && Main.table[4] != 'O')
-                return 4;
+        // Cell with index 2.
+        if (Main.table[0] == charToSearchFor && Main.table[1] == charToSearchFor ||
+                Main.table[5] == charToSearchFor && Main.table[8] == charToSearchFor ||
+                Main.table[4] == charToSearchFor && Main.table[6] == charToSearchFor) {
+            if (isCellEmpty(2)) {
+                return 2;
+            }
+        }
 
-        if (Main.table[6] == charToSearchFor && Main.table[8] == charToSearchFor)
-            if (Main.table[7] != 'X' && Main.table[7] != 'O')
-                return 7;
-
-        /*
-         * Odd cases in columns.
-         * */
-        if (Main.table[0] == charToSearchFor && Main.table[6] == charToSearchFor)
-            if (Main.table[3] != 'X' && Main.table[3] != 'O')
+        // Cell with index 3.
+        if (Main.table[0] == charToSearchFor && Main.table[6] == charToSearchFor ||
+                Main.table[4] == charToSearchFor && Main.table[5] == charToSearchFor) {
+            if (isCellEmpty(3)) {
                 return 3;
+            }
+        }
 
-        if (Main.table[1] == charToSearchFor && Main.table[7] == charToSearchFor)
-            if (Main.table[4] != 'X' && Main.table[4] != 'O')
+        // Cell with index 4.
+        if (Main.table[1] == charToSearchFor && Main.table[7] == charToSearchFor ||
+                Main.table[3] == charToSearchFor && Main.table[5] == charToSearchFor) {
+            if (isCellEmpty(4)) {
                 return 4;
+            }
+        }
 
-        if (Main.table[2] == charToSearchFor && Main.table[8] == charToSearchFor)
-            if (Main.table[5] != 'X' && Main.table[5] != 'O')
+        // Cell with index 5.
+        if (Main.table[3] == charToSearchFor && Main.table[4] == charToSearchFor ||
+                Main.table[2] == charToSearchFor && Main.table[8] == charToSearchFor) {
+            if (isCellEmpty(5)) {
                 return 5;
+            }
+        }
 
+        // Cell with index 6.
+        if (Main.table[0] == charToSearchFor && Main.table[3] == charToSearchFor ||
+                Main.table[7] == charToSearchFor && Main.table[8] == charToSearchFor ||
+                Main.table[2] == charToSearchFor && Main.table[4] == charToSearchFor) {
+            if (isCellEmpty(6)) {
+                return 6;
+            }
+        }
+
+        // Cell with index 7.
+        if (Main.table[1] == charToSearchFor && Main.table[4] == charToSearchFor ||
+                Main.table[6] == charToSearchFor && Main.table[8] == charToSearchFor) {
+            if (isCellEmpty(7)) {
+                return 7;
+            }
+        }
+
+        // Cell with index 8.
+        if (Main.table[2] == charToSearchFor && Main.table[5] == charToSearchFor ||
+                Main.table[6] == charToSearchFor && Main.table[7] == charToSearchFor ||
+                Main.table[0] == charToSearchFor && Main.table[4] == charToSearchFor) {
+            if (isCellEmpty(8)) {
+                return 8;
+            }
+        }
 
         return -1;
     }

@@ -79,10 +79,9 @@ public class Main {
     }
 
     private static String checkGameState() {
-
         int emptyCellsCount = 0;
-        for (int c : table) {
-            if (c != 'X' && c != 'O') {
+        for (int i = 0; i < table.length; i++) {
+            if (isCellEmpty(i)) {
                 emptyCellsCount++;
             }
         }
@@ -122,6 +121,16 @@ public class Main {
         }
 
         return "Game not finished";
+    }
+
+    /**
+     * Returns true if this cell is empty or not.
+     *
+     * @param index of the cell to check.
+     * @return true if the cell is empty, otherwise false.
+     */
+    public static boolean isCellEmpty(int index) {
+        return table[index] != 'X' && table[index] != 'O';
     }
 
 
