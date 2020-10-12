@@ -12,5 +12,7 @@ This command will assign the human player (user) as the X player and the hard AI
 
 - To make the computer play against itself, just the choose the difficulty for both players, for example:
 > start medium hard
+
 > start hard hard
+
 ...etc.
