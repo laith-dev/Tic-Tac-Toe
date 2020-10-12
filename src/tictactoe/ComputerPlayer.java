@@ -32,7 +32,7 @@ public class ComputerPlayer extends Player {
      */
     @Override
     protected void makeMove() {
-        System.out.println("Making move level \"" + difficulty + "\"");
+        System.out.println("Making move level " + difficulty + " (as " + this.symbol + ").");
 
         try {
             Thread.sleep(1500L);
@@ -186,15 +186,15 @@ public class ComputerPlayer extends Player {
      */
     private int[] emptyIndexes(int[] table) {
         int emptyCellsCount = 0;
-        for (int i : table) {
-            if (i != 'X' && i != 'O') {
+        for (int i = 0; i < table.length; i++) {
+            if (Main.isCellEmpty(i)) {
                 emptyCellsCount++;
             }
         }
 
         int[] result = new int[emptyCellsCount];
         for (int i = 0, index = 0; i < table.length; i++) {
-            if (table[i] != 'X' && table[i] != 'O') {
+            if (Main.isCellEmpty(i)) {
                 result[index] = i;
                 index++;
             }
@@ -204,7 +204,11 @@ public class ComputerPlayer extends Player {
     }
 
     /**
+     * Check if the player with the provided symbol wins (i.e. has 3 symbols in a row) in this specific state of the table.
      *
+     * @param table:  the current state of the game.
+     * @param symbol: the player symbol to check if he's winning.
+     * @return true if this player wins, otherwise false.
      */
     private boolean winning(int[] table, char symbol) {
         return (table[0] == symbol && table[1] == symbol && table[2] == symbol) ||
@@ -218,7 +222,7 @@ public class ComputerPlayer extends Player {
     }
 
     /**
-     * Make a random move on the table ragardless of the state of the game.
+     * Make a random move on the table.
      */
     private void makeRandomMove() {
         Random random = new Random();
@@ -348,7 +352,10 @@ public class ComputerPlayer extends Player {
 
 }
 
-
+/**
+ * Make a virtual moves on the table (as described in the minimax method) and store each move's
+ * index (in the table) and its score(1 for winning, -1 for loosing and 0 for draw).
+ */
 class Move {
     int index;
     int score;

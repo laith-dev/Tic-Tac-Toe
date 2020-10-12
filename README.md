@@ -1,5 +1,12 @@
 Usage:
+
+To start the game:
+
 > start playerX playerO
+
+To exit:
+
+> exit
 
 Substitute playerX/playerO with any of these options:
 - user: a human player that will be asked about the index about his next move.
