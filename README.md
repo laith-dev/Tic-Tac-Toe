@@ -10,7 +10,7 @@ To exit:
 
 Substitute playerX/playerO with any of these options:
 - user: a human player that will be asked about the index about his next move.
-- easy/medium/hard: an AI computer player with different levels of difficulty that knows how to play the game.
+- easy/medium/hard: an AI computer player with different levels of difficulty.
 
 For example:
 > start user hard
