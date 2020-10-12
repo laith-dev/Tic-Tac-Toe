@@ -10,7 +10,7 @@ For example:
 
 This command will assign the human player (user) as the X player and the hard AI player (hard) as the O player.
 
-- To make the computer play against itself, just the choose the difficulty for both players, for example:
+- To make the computer play against itself, just choose the difficulty for both players, for example:
 > start medium hard
 
 > start hard hard
