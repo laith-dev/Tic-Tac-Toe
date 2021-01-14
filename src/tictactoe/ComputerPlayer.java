@@ -9,14 +9,14 @@ public class ComputerPlayer extends Player {
 
     /* Difficulty of the AI.
      * It can be:
-     * - Easy
-     * - Medium
-     * - Hard
+     * - Easy: always makes random moves.
+     * - Medium: blocks a direct win or makes a one move to win.
+     * - Hard: tries to win all the time.
      * */
-    String difficulty;
+    private final String difficulty;
 
     /**
-     * Create a computer player that knows how to play the game.
+     * Create an AI player.
      *
      * @param difficulty of the AI.
      * @param symbol     of the AI player, X or O.
@@ -27,8 +27,8 @@ public class ComputerPlayer extends Player {
     }
 
     /**
-     * Make a move by filling an empty cell in the Tic-Tac-Toe table.
-     * The move depends on the AI difficulty level.
+     * Make a move by filling an empty cell in the table.
+     * The type of the move depends on the AI difficulty level.
      */
     @Override
     protected void makeMove() {
@@ -52,7 +52,6 @@ public class ComputerPlayer extends Player {
             case "hard":
                 makeMoveHard();
         }
-
     }
 
     /**
@@ -102,9 +101,8 @@ public class ComputerPlayer extends Player {
         Main.table[bestNextMoveIndex] = this.symbol;
     }
 
-
     /**
-     * The minimax algorithm. It can all the outcomes of the current state of the game and decides the best
+     * The minimax algorithm. It can see all the outcomes of the current state of the game and decides the best
      * next move.
      *
      * @param newTable: this algorithm makes a virtual game by itself depending on the current state of the
@@ -119,7 +117,7 @@ public class ComputerPlayer extends Player {
 
         char opponentSymbol = this.symbol == 'X' ? 'O' : 'X';
 
-        /* Check for a terminal state such as win, lose or tie. And return a value accordingly. */
+        /* Check for a terminal state such as a win, lose or tie. And return a value accordingly. */
         if (winning(newTable, this.symbol)) {
             return 10;
         } else if (winning(newTable, opponentSymbol)) {
@@ -129,6 +127,7 @@ public class ComputerPlayer extends Player {
         }
 
         Move[] moves = new Move[availSpots.length];
+
         // Loop through available spots.
         for (int i = 0; i < availSpots.length; i++) {
             /* Create an object for each empty spot and store the index of that spot. */
@@ -149,14 +148,13 @@ public class ComputerPlayer extends Player {
 
             // Reset the spot to empty.
             newTable[availSpots[i]] = (char) moves[i].index;
-
         }
 
         /* Choose the best move according to the current player:
          * - If it's aiPlayer, choose the move with the highest score.
          * - If it's huPlayer, choose the move with the lowest score. */
-        int bestMoveIndex = -1;
         int bestScore;
+        int bestMoveIndex = -1;
         if (player == this.symbol) {
             bestScore = Integer.MIN_VALUE;
             for (int i = 0; i < moves.length; i++) {
@@ -244,15 +242,15 @@ public class ComputerPlayer extends Player {
      * The crucial move might be:
      * - a winning move: two of the symbols in a row so this method returns the index
      * of the third cell to win the game.
-     * - a blocking move: two of the opponent symbol in a row so this method returns the index
+     * - a blocking move: two of the opponent's symbol in a row so this method returns the index
      * of the third cell to stop the win.
      *
      * @param moveMode: winning or blocking move.
      * @return the index of a crucial move if exists, otherwise -1.
      */
     private int getCrucialMoveIndex(String moveMode) {
-        /* If the mode is winning, then the symbol to search for (two in a row) should be this symbol,
-         * otherwise, it's the opponent symbol. */
+        /* If the mode is winning, then the symbol to search for (two in a row) should be this symbol.
+         *If the mode is blocking, then the symbol to search for (two in a row) should be opponent's symbol. */
         char charToSearchFor;
 
         if (moveMode.equals("winning")) {
@@ -260,12 +258,11 @@ public class ComputerPlayer extends Player {
         } else if (moveMode.equals("blocking")) {
             charToSearchFor = this.symbol == 'X' ? 'O' : 'X';
         } else {
-            System.out.println("Unknown move type!");
-            return -1;
+            throw new IllegalStateException("Unknown move type " + moveMode);
         }
 
-        /* Check every empty cell and see if filling it would make the AI win or the opponent lose
-         * his chance of winning. For example, cell 0 is a crucial cell if any of the following is true:
+        /* Check every empty cell and see if filling it would make the AI win or blocking the opponent
+         * from winning. For example, cell 0 is a crucial cell if any of the following is true:
          * - index 1 and 2 have two of the same symbol.
          * - index 3 and 6 have two of the same symbol.
          * - index 4 and 8 have two of the same symbol.
@@ -349,17 +346,15 @@ public class ComputerPlayer extends Player {
 
         return -1;
     }
-
 }
 
 /**
  * Make a virtual moves on the table (as described in the minimax method) and store each move's
- * index (in the table) and its score(1 for winning, -1 for loosing and 0 for draw).
+ * index (in the table) and its score (1 for win, -1 for lose and 0 for draw).
  */
 class Move {
     int index;
     int score;
-
 }
 
 

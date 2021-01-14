@@ -4,36 +4,42 @@ import java.util.Scanner;
 
 public class Main {
 
+    private static final String GAME_NOT_FINISHED = "Game not finished";
+
     /* Table of the game where each cell is represented by its index. */
     static int[] table;
+
+    private static int emptyCellsCount;
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        String playerX = "", playerO = "";
-        boolean correctInput = false;
-        do {
-            System.out.print("Input command: ");
-            String[] input = sc.nextLine().split(" ");
+        String playerX, playerO;
+        while (true) {
+            System.out.print("Input command: (start 'playerX' 'PlayerO')" + "\n" +
+                    "playerX/playerO: user for a human player, hard/medium/easy for AI player.\n");
+            String[] startGameParams = sc.nextLine().split(" ");
 
-            if (input[0].equals("exit")) {
+            if (startGameParams[0].equals("exit")) {
                 return;
             }
 
-            if (input.length != 3 || !input[0].equals("start") ||
-                    !validPlayerType(input[1]) || !validPlayerType(input[2])) {
+            if (startGameParams.length != 3 || !startGameParams[0].equals("start") ||
+                    invalidPlayerType(startGameParams[1]) || invalidPlayerType(startGameParams[2])) {
                 System.out.println("Bad parameters!");
             } else {
-                playerX = input[1];
-                playerO = input[2];
-                correctInput = true;
+                // The input is valid.
+                playerX = startGameParams[1];
+                playerO = startGameParams[2];
+                break;
             }
-
-        } while (!correctInput);
+        }
 
         /* Start by printing an empty field. */
         table = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8};
+        emptyCellsCount = 9;
         printTable(table);
+
         Player player1, player2;
 
         /* Determine who will be the X player and the O player. */
@@ -55,39 +61,35 @@ public class Main {
          * - X wins
          * - O wins
          * */
-        String gameState;
         do {
             player1.makeMove();
-            /* After each move, print the table and decrease empty cells by one. */
-            printTable(table);
-            if (checkGameState().equals("Game not finished")) {
+            doAfterEachMove();
+            if (getGameState().equals(GAME_NOT_FINISHED)) {
                 player2.makeMove();
-                printTable(table);
+                doAfterEachMove();
+            } else {
+                // GAME OVER
+                break;
             }
 
-            gameState = checkGameState();
+        } while (getGameState().equals(GAME_NOT_FINISHED));
 
-        } while (gameState.equals("Game not finished"));
-
-        System.out.println(gameState);
-
+        System.out.println(getGameState());
     }
 
-    private static boolean validPlayerType(String playerType) {
-        return playerType.equals("user") ||
-                playerType.equals("hard") ||
-                playerType.equals("medium") ||
-                playerType.equals("easy");
+    private static void doAfterEachMove() {
+        emptyCellsCount--;
+        printTable(table);
     }
 
-    private static String checkGameState() {
-        int emptyCellsCount = 0;
-        for (int i = 0; i < table.length; i++) {
-            if (isCellEmpty(i)) {
-                emptyCellsCount++;
-            }
-        }
+    private static boolean invalidPlayerType(String playerType) {
+        return !playerType.equals("user") &&
+                !playerType.equals("hard") &&
+                !playerType.equals("medium") &&
+                !playerType.equals("easy");
+    }
 
+    private static String getGameState() {
         /* Check whether there is at least one row or column or diagonal of Xs. */
         boolean atLeastOneRowOfX =
                 (table[0] == 'X' && table[1] == 'X' && table[2] == 'X') ||
@@ -122,7 +124,7 @@ public class Main {
             return "Draw";
         }
 
-        return "Game not finished";
+        return GAME_NOT_FINISHED;
     }
 
     /**
@@ -135,12 +137,16 @@ public class Main {
         return table[index] != 'X' && table[index] != 'O';
     }
 
-
-    /* Utility method for printing the table. */
+    /**
+     * Print the passed table.
+     *
+     * @param table the table to be printed.
+     */
     private static void printTable(int[] table) {
         System.out.print("---------\n");
         System.out.print("| ");
 
+        /* Print X and O as characters, otherwise, print the index for each cell. */
         for (int i = 0; i < table.length; i++) {
             if (table[i] == 88) {
                 System.out.print('X' + " ");
@@ -149,6 +155,8 @@ public class Main {
             } else {
                 System.out.print('_' + " ");
             }
+
+            // For proper formatting.
             if (i == 2 || i == 5) {
                 System.out.print("| \n| ");
             }
