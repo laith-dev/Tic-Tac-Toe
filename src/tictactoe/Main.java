@@ -16,16 +16,16 @@ public class Main {
 
         String playerX, playerO;
         while (true) {
-            System.out.print("Input command: (start 'playerX' 'PlayerO')" + "\n" +
-                    "playerX/playerO: user for a human player, hard/medium/easy for AI player.\n");
+            printIntro();
             String[] startGameParams = sc.nextLine().split(" ");
 
             if (startGameParams[0].equals("exit")) {
                 return;
             }
 
+            /* A valid input format would be: start <playerX> <playerO> */
             if (startGameParams.length != 3 || !startGameParams[0].equals("start") ||
-                    invalidPlayerType(startGameParams[1]) || invalidPlayerType(startGameParams[2])) {
+                    !validPlayerType(startGameParams[1]) || !validPlayerType(startGameParams[2])) {
                 System.out.println("Bad parameters!");
             } else {
                 // The input is valid.
@@ -56,14 +56,16 @@ public class Main {
         }
 
         /* Game state can be one of four possible values:
-         * - Game not finished
-         * - Draw
-         * - X wins
-         * - O wins
+         * - Game not finished.
+         * - Draw.
+         * - X wins.
+         * - O wins.
          * */
-        do {
+        while (true) {
+
             player1.makeMove();
             doAfterEachMove();
+
             if (getGameState().equals(GAME_NOT_FINISHED)) {
                 player2.makeMove();
                 doAfterEachMove();
@@ -71,10 +73,21 @@ public class Main {
                 // GAME OVER
                 break;
             }
-
-        } while (getGameState().equals(GAME_NOT_FINISHED));
+        }
 
         System.out.println(getGameState());
+    }
+
+    private static void printIntro() {
+        System.out.println("\\************************************************\\" + "\n" +
+                "> To start the game, type:" + "\n" +
+                "start <playerX> <playerO>" + "\n" +
+                "> Substitute <playerX>/<playerO> with any of the following:" + "\n" +
+                "user -> for a human player." + "\n" +
+                "hard/medium/easy -> for an AI player." + "\n\n" +
+                "> For example: start user hard" + "\n" +
+                "\\************************************************\\" + "\n" +
+                "Input command: ");
     }
 
     private static void doAfterEachMove() {
@@ -82,11 +95,9 @@ public class Main {
         printTable(table);
     }
 
-    private static boolean invalidPlayerType(String playerType) {
-        return !playerType.equals("user") &&
-                !playerType.equals("hard") &&
-                !playerType.equals("medium") &&
-                !playerType.equals("easy");
+    private static boolean validPlayerType(String playerType) {
+        return playerType.equals("user") || playerType.equals("hard") ||
+                playerType.equals("medium") || playerType.equals("easy");
     }
 
     private static String getGameState() {
