@@ -1,5 +1,8 @@
 package tictactoe;
 
+/**
+ * An abstract Tic-Tac-Toe player that has a specific symbol and can make a move.
+ */
 public abstract class Player {
 
     /* X or O */
